@@ -1,0 +1,1832 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>PlaceIQ — AI Placement Intelligence</title>
+<script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<style>
+:root {
+  --bg: #0f0f13;
+  --bg2: #18181f;
+  --bg3: #22222d;
+  --border: #2e2e3e;
+  --text: #e8e8f0;
+  --muted: #8888a8;
+  --primary: #7c6af7;
+  --primary-hover: #9080ff;
+  --primary-dim: rgba(124,106,247,0.12);
+  --success: #22c55e;
+  --warning: #f59e0b;
+  --danger: #ef4444;
+  --info: #38bdf8;
+  --radius: 12px;
+  --shadow: 0 4px 24px rgba(0,0,0,0.4);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;font-size:15px;line-height:1.6}
+a{color:var(--primary);text-decoration:none}
+button{cursor:pointer;font-family:inherit;font-size:14px;border:none;border-radius:8px;padding:8px 16px;transition:all .15s}
+input,textarea,select{font-family:inherit;font-size:14px;background:var(--bg3);border:1.5px solid var(--border);border-radius:8px;color:var(--text);padding:10px 14px;width:100%;outline:none;transition:border-color .15s}
+input:focus,textarea:focus,select:focus{border-color:var(--primary)}
+textarea{resize:vertical;min-height:100px}
+.btn{display:inline-flex;align-items:center;gap:8px;border:none;border-radius:8px;padding:10px 20px;font-weight:600;cursor:pointer;transition:all .15s;font-size:14px}
+.btn-primary{background:var(--primary);color:#fff}.btn-primary:hover{background:var(--primary-hover)}
+.btn-secondary{background:var(--bg3);color:var(--text);border:1.5px solid var(--border)}.btn-secondary:hover{border-color:var(--primary);color:var(--primary)}
+.btn-danger{background:rgba(239,68,68,.15);color:var(--danger);border:1.5px solid var(--danger)}.btn-danger:hover{background:var(--danger);color:#fff}
+.btn-ghost{background:transparent;color:var(--muted);padding:6px 12px}.btn-ghost:hover{color:var(--text);background:var(--bg3)}
+.btn-sm{padding:6px 14px;font-size:13px}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.card{background:var(--bg2);border:1.5px solid var(--border);border-radius:var(--radius);padding:24px}
+.badge{display:inline-flex;align-items:center;padding:3px 10px;border-radius:20px;font-size:12px;font-weight:600}
+.badge-primary{background:var(--primary-dim);color:var(--primary)}
+.badge-success{background:rgba(34,197,94,.12);color:var(--success)}
+.badge-warning{background:rgba(245,158,11,.12);color:var(--warning)}
+.badge-danger{background:rgba(239,68,68,.12);color:var(--danger)}
+.badge-muted{background:var(--bg3);color:var(--muted)}
+.tag{display:inline-block;padding:3px 10px;border-radius:20px;font-size:12px;background:var(--bg3);color:var(--muted);border:1px solid var(--border)}
+.tag-skill{background:var(--primary-dim);color:var(--primary);border-color:transparent}
+.tag-missing{background:rgba(245,158,11,.1);color:var(--warning);border-color:rgba(245,158,11,.3)}
+.label{display:block;font-size:13px;font-weight:600;color:var(--muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:.04em}
+.form-group{margin-bottom:16px}
+.spinner{display:inline-block;width:18px;height:18px;border:2px solid rgba(255,255,255,.2);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.toast-container{position:fixed;top:20px;right:20px;z-index:9999;display:flex;flex-direction:column;gap:8px;max-width:360px}
+.toast{padding:12px 18px;border-radius:10px;font-size:14px;font-weight:500;box-shadow:var(--shadow);animation:slideIn .2s ease;display:flex;align-items:center;gap:10px}
+.toast-success{background:#16a34a;color:#fff}
+.toast-error{background:#dc2626;color:#fff}
+.toast-info{background:var(--primary);color:#fff}
+@keyframes slideIn{from{transform:translateX(100%);opacity:0}to{transform:none;opacity:1}}
+
+/* Layout */
+.app-header{background:var(--bg2);border-bottom:1.5px solid var(--border);position:sticky;top:0;z-index:100;backdrop-filter:blur(12px)}
+.header-inner{max-width:1200px;margin:0 auto;padding:0 24px;height:60px;display:flex;align-items:center;justify-content:space-between}
+.logo{display:flex;align-items:center;gap:10px;font-size:20px;font-weight:800;color:var(--text);cursor:pointer}
+.logo-icon{width:36px;height:36px;background:linear-gradient(135deg,var(--primary),#a78bfa);border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:18px}
+.logo span{color:var(--primary)}
+.nav{display:flex;align-items:center;gap:4px}
+.nav-item{padding:6px 12px;border-radius:8px;font-size:14px;font-weight:500;color:var(--muted);cursor:pointer;transition:all .15s;border:none;background:none}
+.nav-item:hover{color:var(--text);background:var(--bg3)}
+.nav-item.active{color:var(--primary);background:var(--primary-dim)}
+.page{max-width:1200px;margin:0 auto;padding:32px 24px}
+.page-sm{max-width:640px;margin:0 auto;padding:32px 24px}
+.page-md{max-width:900px;margin:0 auto;padding:32px 24px}
+.page-title{font-size:28px;font-weight:800;margin-bottom:6px}
+.page-sub{color:var(--muted);margin-bottom:28px}
+.grid-2{display:grid;grid-template-columns:repeat(2,1fr);gap:20px}
+.grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+.grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+@media(max-width:768px){.grid-2,.grid-3,.grid-4{grid-template-columns:1fr}.nav{display:none}}
+.stat-card{background:var(--bg2);border:1.5px solid var(--border);border-radius:var(--radius);padding:20px}
+.stat-value{font-size:32px;font-weight:800;color:var(--text)}
+.stat-label{font-size:13px;color:var(--muted);margin-top:2px}
+
+/* Score ring */
+.score-ring{position:relative;width:100px;height:100px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.score-ring svg{position:absolute;top:0;left:0;transform:rotate(-90deg)}
+.score-num{font-size:26px;font-weight:800;text-align:center;line-height:1}
+.score-sub{font-size:11px;color:var(--muted);text-align:center}
+
+/* Chat */
+.chat-container{display:flex;flex-direction:column;height:calc(100vh - 120px);max-height:700px}
+.chat-messages{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:12px}
+.chat-msg{max-width:80%;padding:12px 16px;border-radius:12px;font-size:14px;line-height:1.6}
+.chat-msg.user{background:var(--primary);color:#fff;align-self:flex-end;border-bottom-right-radius:4px}
+.chat-msg.assistant{background:var(--bg3);color:var(--text);align-self:flex-start;border-bottom-left-radius:4px}
+.chat-input-row{display:flex;gap:10px;padding:16px;border-top:1.5px solid var(--border)}
+.chat-input-row input{flex:1}
+
+/* Tabs */
+.tabs{display:flex;border-bottom:1.5px solid var(--border);margin-bottom:24px;gap:4px}
+.tab{padding:10px 20px;font-size:14px;font-weight:600;color:var(--muted);cursor:pointer;border:none;background:none;border-bottom:2px solid transparent;margin-bottom:-1.5px;transition:all .15s}
+.tab:hover{color:var(--text)}
+.tab.active{color:var(--primary);border-bottom-color:var(--primary)}
+
+/* Dropzone */
+.dropzone{border:2.5px dashed var(--border);border-radius:var(--radius);padding:48px;text-align:center;transition:all .2s;cursor:pointer}
+.dropzone:hover,.dropzone.over{border-color:var(--primary);background:var(--primary-dim)}
+.dropzone-icon{font-size:40px;margin-bottom:12px}
+
+/* Progress bar */
+.progress-bar{height:8px;background:var(--bg3);border-radius:4px;overflow:hidden}
+.progress-fill{height:100%;background:linear-gradient(90deg,var(--primary),#a78bfa);transition:width .4s}
+
+/* Interview */
+.question-card{background:var(--bg3);border:1.5px solid var(--border);border-radius:var(--radius);padding:20px;margin-bottom:16px}
+.question-num{font-size:12px;font-weight:700;color:var(--primary);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px}
+
+/* Empty state */
+.empty{text-align:center;padding:60px 20px;color:var(--muted)}
+.empty-icon{font-size:48px;margin-bottom:16px}
+.empty h3{font-size:18px;color:var(--text);margin-bottom:8px}
+
+/* Modal */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:200;display:flex;align-items:center;justify-content:center;padding:24px}
+.modal{background:var(--bg2);border:1.5px solid var(--border);border-radius:16px;padding:28px;max-width:520px;width:100%;max-height:80vh;overflow-y:auto}
+.modal-title{font-size:20px;font-weight:800;margin-bottom:20px}
+
+/* Section heading */
+.section-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
+.section-head h2{font-size:20px;font-weight:700}
+
+/* Notification dot */
+.notif-dot{width:8px;height:8px;background:var(--danger);border-radius:50%;display:inline-block;margin-left:4px;vertical-align:middle}
+
+/* Hero landing */
+.hero{background:linear-gradient(135deg,#1a1040 0%,#0d1a2e 50%,#130d24 100%);padding:80px 24px;text-align:center}
+.hero h1{font-size:52px;font-weight:900;line-height:1.1;margin-bottom:20px}
+.hero h1 span{background:linear-gradient(90deg,var(--primary),#a78bfa,var(--info));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.hero p{font-size:18px;color:var(--muted);max-width:560px;margin:0 auto 36px}
+.hero-btns{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+.feature-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:20px;max-width:1100px;margin:0 auto;padding:60px 24px}
+@media(max-width:900px){.feature-grid{grid-template-columns:repeat(2,1fr)}.hero h1{font-size:36px}}
+.feature-item{background:var(--bg2);border:1.5px solid var(--border);border-radius:var(--radius);padding:24px;transition:all .2s}
+.feature-item:hover{border-color:var(--primary);transform:translateY(-2px)}
+.feature-icon{font-size:28px;margin-bottom:12px}
+.feature-title{font-size:16px;font-weight:700;margin-bottom:6px}
+.feature-desc{font-size:13px;color:var(--muted);line-height:1.6}
+
+/* Score color utilities */
+.score-high{color:var(--success)}
+.score-mid{color:var(--primary)}
+.score-low{color:var(--warning)}
+.score-bad{color:var(--danger)}
+
+.flex{display:flex}.items-center{align-items:center}.justify-between{justify-content:space-between}.gap-2{gap:8px}.gap-3{gap:12px}.flex-1{flex:1}
+.mt-1{margin-top:4px}.mt-2{margin-top:8px}.mt-3{margin-top:12px}.mt-4{margin-top:16px}.mt-6{margin-top:24px}
+.mb-1{margin-bottom:4px}.mb-2{margin-bottom:8px}.mb-3{margin-bottom:12px}.mb-4{margin-bottom:16px}
+.text-sm{font-size:13px}.text-xs{font-size:12px}.text-muted{color:var(--muted)}.font-bold{font-weight:700}.font-medium{font-weight:600}
+.w-full{width:100%}.text-center{text-align:center}
+.divider{border:none;border-top:1.5px solid var(--border);margin:20px 0}
+
+/* Markdown rendering */
+.md-content h1,.md-content h2,.md-content h3{margin:12px 0 6px;font-weight:700}
+.md-content p{margin-bottom:8px}
+.md-content ul,.md-content ol{padding-left:20px;margin-bottom:8px}
+.md-content li{margin-bottom:3px}
+.md-content code{background:var(--bg3);padding:2px 6px;border-radius:4px;font-size:12px}
+.md-content strong{color:var(--text)}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<div id="toasts" class="toast-container"></div>
+
+<script type="text/babel">
+const { useState, useEffect, useRef, useCallback, useMemo } = React;
+
+// ── API ──────────────────────────────────────────────────────────────────────
+const API = '';  // same origin
+
+function apiReq(path, opts = {}) {
+  const token = localStorage.getItem('placeiq_token');
+  const headers = { ...(opts.headers || {}) };
+  if (token) headers['Authorization'] = `Token ${token}`;
+  if (opts.body && typeof opts.body === 'object' && !(opts.body instanceof FormData)) {
+    headers['Content-Type'] = 'application/json';
+    opts = { ...opts, body: JSON.stringify(opts.body) };
+  }
+  return fetch(`${API}/api${path}`, { ...opts, headers }).then(async r => {
+    const text = await r.text();
+    const data = text ? JSON.parse(text) : null;
+    if (!r.ok) throw new Error(data?.detail || data?.error || r.statusText);
+    return data;
+  });
+}
+
+// ── Toast ────────────────────────────────────────────────────────────────────
+function showToast(msg, type = 'info') {
+  const el = document.createElement('div');
+  el.className = `toast toast-${type}`;
+  el.textContent = msg;
+  document.getElementById('toasts').appendChild(el);
+  setTimeout(() => el.remove(), 3500);
+}
+
+// ── Auth Context ─────────────────────────────────────────────────────────────
+const AuthCtx = React.createContext(null);
+
+function AuthProvider({ children }) {
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const token = localStorage.getItem('placeiq_token');
+    if (!token) { setLoading(false); return; }
+    apiReq('/auth/me/')
+      .then(u => setUser(u))
+      .catch(() => { localStorage.removeItem('placeiq_token'); localStorage.removeItem('placeiq_user'); })
+      .finally(() => setLoading(false));
+  }, []);
+
+  const signIn = async (email, password) => {
+    const d = await apiReq('/auth/login/', { method: 'POST', body: { username: email, password } });
+    localStorage.setItem('placeiq_token', d.token);
+    localStorage.setItem('placeiq_user', JSON.stringify(d.user));
+    setUser(d.user);
+    return d;
+  };
+
+  const signUp = async (email, password, name) => {
+    const d = await apiReq('/auth/register/', { method: 'POST', body: { username: email, email, password, first_name: name } });
+    localStorage.setItem('placeiq_token', d.token);
+    localStorage.setItem('placeiq_user', JSON.stringify(d.user));
+    setUser(d.user);
+    return d;
+  };
+
+  const signOut = async () => {
+    try { await apiReq('/auth/logout/', { method: 'POST' }); } catch {}
+    localStorage.removeItem('placeiq_token');
+    localStorage.removeItem('placeiq_user');
+    setUser(null);
+  };
+
+  return (
+    <AuthCtx.Provider value={{ user, loading, signIn, signUp, signOut, isAdmin: user?.role === 'admin' }}>
+      {children}
+    </AuthCtx.Provider>
+  );
+}
+
+function useAuth() { return React.useContext(AuthCtx); }
+
+// ── Router ───────────────────────────────────────────────────────────────────
+function useHash() {
+  const [hash, setHash] = useState(window.location.hash.slice(1) || '/');
+  useEffect(() => {
+    const h = () => setHash(window.location.hash.slice(1) || '/');
+    window.addEventListener('hashchange', h);
+    return () => window.removeEventListener('hashchange', h);
+  }, []);
+  return hash;
+}
+
+function navigate(path) {
+  window.location.hash = path;
+}
+
+// ── App ───────────────────────────────────────────────────────────────────────
+function App() {
+  const hash = useHash();
+  const { user, loading } = useAuth();
+
+  if (loading) return (
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh' }}>
+      <div className="spinner" style={{ width: 36, height: 36, borderWidth: 3 }} />
+    </div>
+  );
+
+  const page = hash.split('?')[0];
+
+  const requireAuth = (comp) => {
+    if (!user) { setTimeout(() => navigate('/login'), 0); return null; }
+    return comp;
+  };
+
+  const routes = {
+    '/': user ? <Dashboard /> : <Landing />,
+    '/login': user ? <Dashboard /> : <LoginPage />,
+    '/dashboard': requireAuth(<Dashboard />),
+    '/resumes': requireAuth(<ResumesPage />),
+    '/jobs': requireAuth(<JobsPage />),
+    '/ai/chat': requireAuth(<ChatPage />),
+    '/ai/roadmap': requireAuth(<RoadmapPage />),
+    '/ai/skill-gap': requireAuth(<SkillGapPage />),
+    '/interview': requireAuth(<InterviewPage />),
+    '/notifications': requireAuth(<NotificationsPage />),
+    '/profile': requireAuth(<ProfilePage />),
+    '/learn': requireAuth(<LearnPage />),
+    '/admin': requireAuth(user?.role === 'admin' ? <AdminPage /> : <Dashboard />),
+  };
+
+  const currentPage = routes[page] ?? routes['/'];
+
+  return (
+    <div>
+      {user && <AppHeader />}
+      {!user && page !== '/login' && <PublicHeader />}
+      <main>{currentPage}</main>
+    </div>
+  );
+}
+
+// ── Headers ───────────────────────────────────────────────────────────────────
+function PublicHeader() {
+  return (
+    <header className="app-header">
+      <div className="header-inner">
+        <div className="logo" onClick={() => navigate('/')}>
+          <div className="logo-icon">🧠</div>
+          Place<span>IQ</span>
+        </div>
+        <div className="nav">
+          <button className="nav-item" onClick={() => navigate('/login')}>Sign in</button>
+          <button className="btn btn-primary btn-sm" onClick={() => navigate('/login')}>Get started</button>
+        </div>
+      </div>
+    </header>
+  );
+}
+
+function AppHeader() {
+  const { user, signOut, isAdmin } = useAuth();
+  const hash = useHash();
+  const page = hash.split('?')[0];
+  const [notifCount, setNotifCount] = useState(0);
+
+  useEffect(() => {
+    apiReq('/notifications/').then(d => {
+      setNotifCount(d.filter(n => !n.is_read).length);
+    }).catch(() => {});
+  }, [page]);
+
+  const navItems = [
+    { path: '/dashboard', label: 'Dashboard' },
+    { path: '/resumes', label: 'Resumes' },
+    { path: '/jobs', label: 'Jobs' },
+    { path: '/ai/chat', label: 'AI Chat' },
+    { path: '/interview', label: 'Interview' },
+    { path: '/learn', label: 'Learn' },
+    ...(isAdmin ? [{ path: '/admin', label: 'Admin' }] : []),
+  ];
+
+  const name = user?.first_name || user?.username || user?.email?.split('@')[0];
+
+  return (
+    <header className="app-header">
+      <div className="header-inner">
+        <div className="logo" onClick={() => navigate('/dashboard')}>
+          <div className="logo-icon">🧠</div>
+          Place<span>IQ</span>
+        </div>
+        <nav className="nav">
+          {navItems.map(n => (
+            <button key={n.path} className={`nav-item${page === n.path ? ' active' : ''}`} onClick={() => navigate(n.path)}>
+              {n.label}
+            </button>
+          ))}
+          <button className="nav-item" onClick={() => navigate('/notifications')}>
+            🔔{notifCount > 0 && <span className="notif-dot" />}
+          </button>
+          <button className="nav-item" onClick={() => navigate('/profile')}>👤 {name}</button>
+          <button className="btn btn-secondary btn-sm" onClick={async () => { await signOut(); navigate('/'); }}>Sign out</button>
+        </nav>
+      </div>
+    </header>
+  );
+}
+
+// ── Landing ───────────────────────────────────────────────────────────────────
+function Landing() {
+  return (
+    <div>
+      <div className="hero">
+        <h1>Land your dream placement<br/>with <span>AI intelligence</span></h1>
+        <p>Upload your resume, get an instant ATS score, see matched jobs, and practice interviews — all in one place.</p>
+        <div className="hero-btns">
+          <button className="btn btn-primary" style={{ fontSize: 16, padding: '12px 28px' }} onClick={() => navigate('/login')}>
+            🚀 Get started free
+          </button>
+          <button className="btn btn-secondary" style={{ fontSize: 16, padding: '12px 28px' }} onClick={() => navigate('/login')}>
+            Explore jobs
+          </button>
+        </div>
+      </div>
+      <div className="feature-grid">
+        {[
+          { icon: '📄', title: 'Smart Resume Analyzer', desc: 'AI-powered ATS scoring, skills extraction and improvement suggestions.' },
+          { icon: '🤖', title: 'AI Career Assistant', desc: 'Get personalized roadmaps, cover letters and career advice.' },
+          { icon: '🎤', title: 'Mock Interviews', desc: 'Role-specific questions with instant AI feedback and scoring.' },
+          { icon: '🎯', title: 'Job Matching', desc: 'Personalized job recommendations based on your skills.' },
+          { icon: '📊', title: 'Skill Gap Analysis', desc: 'See exactly which skills you need for your dream role.' },
+          { icon: '📚', title: 'Learning & MCQs', desc: 'Practice with AI-generated MCQs on any topic.' },
+          { icon: '🗺️', title: 'Career Roadmaps', desc: 'Step-by-step learning paths to reach your career goals.' },
+          { icon: '🏆', title: 'Progress Tracking', desc: 'Track your interview scores, ATS trends, and learning history.' },
+        ].map(f => (
+          <div key={f.title} className="feature-item">
+            <div className="feature-icon">{f.icon}</div>
+            <div className="feature-title">{f.title}</div>
+            <div className="feature-desc">{f.desc}</div>
+          </div>
+        ))}
+      </div>
+      <div style={{ textAlign: 'center', padding: '60px 24px', background: 'var(--bg2)', borderTop: '1.5px solid var(--border)' }}>
+        <h2 style={{ fontSize: 32, fontWeight: 800, marginBottom: 12 }}>Ready to ace your placements?</h2>
+        <p style={{ color: 'var(--muted)', marginBottom: 28 }}>Join students using PlaceIQ to sharpen resumes and land interviews.</p>
+        <button className="btn btn-primary" style={{ fontSize: 16, padding: '12px 28px' }} onClick={() => navigate('/login')}>
+          Create your account →
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// ── Login ─────────────────────────────────────────────────────────────────────
+function LoginPage() {
+  const { signIn, signUp } = useAuth();
+  const [tab, setTab] = useState('signin');
+  const [loading, setLoading] = useState(false);
+  const [form, setForm] = useState({ email: '', password: '', name: '' });
+
+  const submit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    try {
+      if (tab === 'signin') {
+        await signIn(form.email, form.password);
+        showToast('Welcome back!', 'success');
+      } else {
+        if (!form.name.trim()) { showToast('Name required', 'error'); return; }
+        await signUp(form.email, form.password, form.name);
+        showToast('Account created!', 'success');
+      }
+      navigate('/dashboard');
+    } catch (e) {
+      showToast(e.message, 'error');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="page-sm" style={{ paddingTop: 60 }}>
+      <div style={{ textAlign: 'center', marginBottom: 32 }}>
+        <div style={{ fontSize: 48, marginBottom: 8 }}>🧠</div>
+        <div style={{ fontSize: 24, fontWeight: 900 }}>Place<span style={{ color: 'var(--primary)' }}>IQ</span></div>
+      </div>
+      <div className="card">
+        <div className="tabs" style={{ marginBottom: 24 }}>
+          <button className={`tab${tab === 'signin' ? ' active' : ''}`} onClick={() => setTab('signin')}>Sign in</button>
+          <button className={`tab${tab === 'signup' ? ' active' : ''}`} onClick={() => setTab('signup')}>Sign up</button>
+        </div>
+        <form onSubmit={submit}>
+          {tab === 'signup' && (
+            <div className="form-group">
+              <label className="label">Full name</label>
+              <input required value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} placeholder="Jane Doe" />
+            </div>
+          )}
+          <div className="form-group">
+            <label className="label">Email</label>
+            <input type="email" required value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))} placeholder="you@example.com" />
+          </div>
+          <div className="form-group">
+            <label className="label">Password</label>
+            <input type="password" required minLength={8} value={form.password} onChange={e => setForm(f => ({ ...f, password: e.target.value }))} placeholder="Min 8 characters" />
+          </div>
+          <button type="submit" className="btn btn-primary w-full" disabled={loading}>
+            {loading ? <><span className="spinner" />&nbsp;{tab === 'signin' ? 'Signing in…' : 'Creating…'}</> : (tab === 'signin' ? 'Sign in' : 'Create account')}
+          </button>
+          {tab === 'signin' && (
+            <div className="mt-3 text-center text-sm text-muted">
+              Demo: student@placeiq.com / student123 | admin@placeiq.com / admin1234
+            </div>
+          )}
+        </form>
+      </div>
+    </div>
+  );
+}
+
+// ── Dashboard ─────────────────────────────────────────────────────────────────
+function Dashboard() {
+  const { user } = useAuth();
+  const [resumes, setResumes] = useState([]);
+  const [jobs, setJobs] = useState([]);
+  const [stats, setStats] = useState(null);
+  const name = user?.first_name || user?.username || 'there';
+
+  useEffect(() => {
+    apiReq('/resumes/').then(setResumes).catch(() => {});
+    apiReq('/jobs/').then(setJobs).catch(() => {});
+    if (user?.role === 'admin') {
+      apiReq('/admin/stats/').then(setStats).catch(() => {});
+    }
+  }, []);
+
+  const bestScore = resumes.reduce((m, r) => r.ats_score > m ? r.ats_score : m, 0);
+  const analyzed = resumes.filter(r => r.status === 'analyzed').length;
+
+  const scoreColor = bestScore >= 75 ? 'var(--success)' : bestScore >= 50 ? 'var(--primary)' : bestScore >= 30 ? 'var(--warning)' : 'var(--danger)';
+
+  return (
+    <div className="page">
+      <div style={{ marginBottom: 32 }}>
+        <div className="text-muted text-sm">Welcome back</div>
+        <h1 className="page-title">Hi {name} 👋</h1>
+        <div className="text-muted">Your placement readiness hub. Start by uploading a resume.</div>
+      </div>
+
+      {user?.role === 'admin' && stats && (
+        <div style={{ marginBottom: 32 }}>
+          <h2 style={{ fontWeight: 700, marginBottom: 16 }}>📊 Admin Overview</h2>
+          <div className="grid-4">
+            {[
+              { label: 'Total users', value: stats.total_users },
+              { label: 'Resumes uploaded', value: stats.total_resumes },
+              { label: 'Jobs posted', value: stats.total_jobs },
+              { label: 'Applications', value: stats.total_applications },
+            ].map(s => (
+              <div key={s.label} className="stat-card">
+                <div className="stat-value">{s.value}</div>
+                <div className="stat-label">{s.label}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      <div className="grid-4" style={{ marginBottom: 32 }}>
+        <div className="stat-card">
+          <div className="stat-value">{resumes.length}</div>
+          <div className="stat-label">Resumes uploaded</div>
+        </div>
+        <div className="stat-card">
+          <div className="stat-value" style={{ color: scoreColor }}>{bestScore || '—'}</div>
+          <div className="stat-label">Best ATS score</div>
+        </div>
+        <div className="stat-card">
+          <div className="stat-value">{analyzed}</div>
+          <div className="stat-label">Analyses done</div>
+        </div>
+        <div className="stat-card">
+          <div className="stat-value">{jobs.length}</div>
+          <div className="stat-label">Jobs available</div>
+        </div>
+      </div>
+
+      <div className="grid-3">
+        {[
+          { icon: '📄', title: 'Resume Analyzer', desc: 'Upload your resume and get an instant ATS score plus improvement tips.', cta: 'Upload resume', path: '/resumes' },
+          { icon: '💼', title: 'Browse Jobs', desc: 'See AI-matched roles and identify the skills you need.', cta: 'View jobs', path: '/jobs' },
+          { icon: '🎤', title: 'Mock Interview', desc: 'Role-specific practice with instant AI feedback.', cta: 'Start interview', path: '/interview' },
+          { icon: '🤖', title: 'AI Career Chat', desc: 'Get personalized career guidance and cover letter help.', cta: 'Chat now', path: '/ai/chat' },
+          { icon: '🗺️', title: 'Career Roadmap', desc: 'Get a step-by-step roadmap to reach your target role.', cta: 'Build roadmap', path: '/ai/roadmap' },
+          { icon: '📚', title: 'Practice MCQs', desc: 'AI-generated quizzes on any topic to sharpen your skills.', cta: 'Start learning', path: '/learn' },
+        ].map(t => (
+          <div key={t.title} className="card" style={{ cursor: 'pointer', transition: 'all .15s' }}
+            onClick={() => navigate(t.path)}
+            onMouseEnter={e => e.currentTarget.style.borderColor = 'var(--primary)'}
+            onMouseLeave={e => e.currentTarget.style.borderColor = 'var(--border)'}>
+            <div style={{ fontSize: 28, marginBottom: 10 }}>{t.icon}</div>
+            <div style={{ fontWeight: 700, fontSize: 16, marginBottom: 6 }}>{t.title}</div>
+            <div className="text-muted text-sm" style={{ marginBottom: 14, lineHeight: 1.6 }}>{t.desc}</div>
+            <span style={{ color: 'var(--primary)', fontSize: 14, fontWeight: 600 }}>{t.cta} →</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ── Resumes ───────────────────────────────────────────────────────────────────
+function ResumesPage() {
+  const { user } = useAuth();
+  const [resumes, setResumes] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [uploading, setUploading] = useState(false);
+  const [analyzingId, setAnalyzingId] = useState(null);
+  const [dragOver, setDragOver] = useState(false);
+  const inputRef = useRef();
+
+  const load = useCallback(async () => {
+    setLoading(true);
+    try { setResumes(await apiReq('/resumes/')); }
+    catch (e) { showToast(e.message, 'error'); }
+    finally { setLoading(false); }
+  }, []);
+
+  useEffect(() => { load(); }, [load]);
+
+  const extractText = async (file) => {
+    const ext = file.name.split('.').pop().toLowerCase();
+    if (ext === 'txt') return new Promise((res, rej) => { const r = new FileReader(); r.onload = () => res(r.result); r.onerror = rej; r.readAsText(file); });
+
+    if (ext === 'pdf') {
+      const pdfjsLib = window['pdfjs-dist/build/pdf'];
+      if (!pdfjsLib) throw new Error('PDF.js not loaded. Try a .txt file.');
+      const ab = await file.arrayBuffer();
+      const pdf = await pdfjsLib.getDocument({ data: ab }).promise;
+      let text = '';
+      for (let i = 1; i <= pdf.numPages; i++) {
+        const page = await pdf.getPage(i);
+        const content = await page.getTextContent();
+        text += content.items.map(item => item.str).join(' ') + '\n';
+      }
+      return text;
+    }
+
+    // Fallback for docx - just read as text
+    return new Promise((res, rej) => { const r = new FileReader(); r.onload = () => res(r.result || ''); r.onerror = rej; r.readAsText(file); });
+  };
+
+  const handleFiles = async (files) => {
+    if (!files?.length) return;
+    const file = files[0];
+    if (file.size > 10 * 1024 * 1024) { showToast('File too large (max 10MB)', 'error'); return; }
+    setUploading(true);
+    try {
+      let rawText = '';
+      try { rawText = await extractText(file); } catch {}
+      if (rawText.length < 30) rawText = `Resume file: ${file.name}\n(Text extraction limited - using filename for analysis)`;
+
+      // Upload file
+      const form = new FormData();
+      form.append('file', file);
+      const uploaded = await apiReq('/uploads/resumes/', { method: 'POST', headers: {}, body: form });
+
+      // Create resume record
+      const row = await apiReq('/resumes/', {
+        method: 'POST',
+        body: { file_name: file.name, file_path: uploaded.file_path, raw_text: rawText.slice(0, 60000), status: 'analyzing' },
+      });
+
+      showToast('Uploaded! Running AI analysis…', 'info');
+      setAnalyzingId(row.id);
+      await load();
+
+      // Trigger analysis
+      try {
+        await apiReq(`/resumes/${row.id}/analyze/`, { method: 'POST', body: { raw_text: rawText.slice(0, 60000) } });
+        showToast('Analysis complete! 🎉', 'success');
+      } catch (e) {
+        showToast('Analysis: ' + e.message, 'error');
+      } finally {
+        setAnalyzingId(null);
+        await load();
+      }
+    } catch (e) {
+      showToast(e.message, 'error');
+    } finally {
+      setUploading(false);
+      if (inputRef.current) inputRef.current.value = '';
+    }
+  };
+
+  const reanalyze = async (r) => {
+    setAnalyzingId(r.id);
+    try {
+      const full = await apiReq(`/resumes/${r.id}/`);
+      const text = full.raw_text || r.file_name;
+      if (text.length < 10) { showToast('No text stored. Upload again.', 'error'); return; }
+      // We need full raw_text - re-fetch without truncation
+      const fullResume = await apiReq(`/resumes/${r.id}/`);
+      await apiReq(`/resumes/${r.id}/analyze/`, { method: 'POST', body: { raw_text: fullResume.raw_text || text } });
+      showToast('Re-analyzed!', 'success');
+      await load();
+    } catch (e) { showToast(e.message, 'error'); }
+    finally { setAnalyzingId(null); }
+  };
+
+  const remove = async (r) => {
+    if (!confirm(`Delete "${r.file_name}"?`)) return;
+    try {
+      await apiReq(`/resumes/${r.id}/`, { method: 'DELETE' });
+      showToast('Deleted', 'success');
+      load();
+    } catch (e) { showToast(e.message, 'error'); }
+  };
+
+  return (
+    <div className="page-md">
+      <div className="page-title">📄 Resume Analyzer</div>
+      <div className="page-sub">Upload a PDF, DOCX or TXT resume — get ATS score, skill breakdown and AI improvement suggestions.</div>
+
+      <div className={`dropzone${dragOver ? ' over' : ''}`}
+        onDragOver={e => { e.preventDefault(); setDragOver(true); }}
+        onDragLeave={() => setDragOver(false)}
+        onDrop={e => { e.preventDefault(); setDragOver(false); if (!uploading) handleFiles(e.dataTransfer.files); }}
+        onClick={() => !uploading && inputRef.current?.click()}>
+        <div className="dropzone-icon">📤</div>
+        <div style={{ fontWeight: 600, marginBottom: 6 }}>Drag & drop your resume here</div>
+        <div className="text-sm text-muted" style={{ marginBottom: 16 }}>PDF, DOCX or TXT — up to 10MB</div>
+        <button className="btn btn-primary" disabled={uploading} onClick={e => { e.stopPropagation(); inputRef.current?.click(); }}>
+          {uploading ? <><span className="spinner" /> Processing…</> : '📤 Choose file'}
+        </button>
+        <input ref={inputRef} type="file" accept=".pdf,.docx,.txt" style={{ display: 'none' }} onChange={e => handleFiles(e.target.files)} />
+      </div>
+
+      <div className="mt-6">
+        <h2 style={{ fontWeight: 700, fontSize: 18, marginBottom: 16 }}>Your resumes ({resumes.length})</h2>
+        {loading ? (
+          <div style={{ textAlign: 'center', padding: 40 }}><span className="spinner" style={{ width: 32, height: 32 }} /></div>
+        ) : resumes.length === 0 ? (
+          <div className="empty"><div className="empty-icon">✨</div><h3>No resumes yet</h3><div>Upload one above to see your ATS score.</div></div>
+        ) : (
+          resumes.map(r => <ResumeCard key={r.id} resume={r} busy={analyzingId === r.id} onReanalyze={() => reanalyze(r)} onDelete={() => remove(r)} />)
+        )}
+      </div>
+    </div>
+  );
+}
+
+function ResumeCard({ resume: r, busy, onReanalyze, onDelete }) {
+  const score = r.ats_score ?? 0;
+  const scoreColor = score >= 75 ? 'var(--success)' : score >= 55 ? 'var(--primary)' : score >= 40 ? 'var(--warning)' : 'var(--danger)';
+  const [open, setOpen] = useState(false);
+
+  const statusMap = {
+    pending: { label: 'Pending', cls: 'badge-muted' },
+    analyzing: { label: 'Analyzing…', cls: 'badge-primary' },
+    analyzed: { label: 'Analyzed ✓', cls: 'badge-success' },
+    failed: { label: 'Failed', cls: 'badge-danger' },
+  };
+  const st = statusMap[r.status] || statusMap.pending;
+
+  // Stroke dasharray for ring
+  const radius = 40, circ = 2 * Math.PI * radius;
+  const dash = ((score / 100) * circ).toFixed(1);
+
+  return (
+    <div className="card" style={{ marginBottom: 16 }}>
+      <div className="flex items-center justify-between" style={{ flexWrap: 'wrap', gap: 12 }}>
+        <div>
+          <div className="flex items-center gap-2">
+            <span style={{ fontSize: 16 }}>📄</span>
+            <span style={{ fontWeight: 600 }}>{r.file_name}</span>
+            <span className={`badge ${st.cls}`}>{st.label}</span>
+          </div>
+          <div className="text-xs text-muted mt-1">Uploaded {new Date(r.created_at).toLocaleString()}</div>
+        </div>
+        <div className="flex gap-2">
+          <button className="btn btn-secondary btn-sm" onClick={onReanalyze} disabled={busy}>
+            {busy ? <span className="spinner" /> : '✨'} Re-analyze
+          </button>
+          {r.status === 'analyzed' && <button className="btn btn-ghost btn-sm" onClick={() => setOpen(o => !o)}>{open ? '▲ Hide' : '▼ Details'}</button>}
+          <button className="btn btn-danger btn-sm" onClick={onDelete} disabled={busy}>🗑</button>
+        </div>
+      </div>
+
+      {(r.status === 'analyzing' || busy) && (
+        <div className="flex items-center gap-2 mt-4 text-sm text-muted"><span className="spinner" /> AI is analyzing your resume…</div>
+      )}
+
+      {r.status === 'failed' && !busy && (
+        <div className="mt-4 text-sm" style={{ color: 'var(--danger)' }}>⚠ Analysis failed. Click Re-analyze to retry.</div>
+      )}
+
+      {r.ats_score != null && !busy && (
+        <div>
+          <div className="flex items-center gap-3 mt-4" style={{ flexWrap: 'wrap' }}>
+            <div className="score-ring">
+              <svg width="100" height="100" viewBox="0 0 100 100">
+                <circle cx="50" cy="50" r={radius} fill="none" stroke="var(--bg3)" strokeWidth="10" />
+                <circle cx="50" cy="50" r={radius} fill="none" stroke={scoreColor} strokeWidth="10"
+                  strokeDasharray={`${dash} ${circ}`} strokeLinecap="round" />
+              </svg>
+              <div>
+                <div className="score-num" style={{ color: scoreColor }}>{score}</div>
+                <div className="score-sub">ATS Score</div>
+              </div>
+            </div>
+            {r.summary && <div className="flex-1 text-sm" style={{ lineHeight: 1.7, color: 'var(--muted)' }}>{r.summary}</div>}
+          </div>
+
+          {open && (
+            <div style={{ marginTop: 20 }}>
+              {r.skills?.length > 0 && (
+                <div className="mb-4">
+                  <div className="label mb-2">✅ Skills detected</div>
+                  <div className="flex" style={{ flexWrap: 'wrap', gap: 6 }}>
+                    {r.skills.map(s => <span key={s} className="tag tag-skill">{s}</span>)}
+                  </div>
+                </div>
+              )}
+              {r.missing_skills?.length > 0 && (
+                <div className="mb-4">
+                  <div className="label mb-2">⚡ Skills to add</div>
+                  <div className="flex" style={{ flexWrap: 'wrap', gap: 6 }}>
+                    {r.missing_skills.map(s => <span key={s} className="tag tag-missing">{s}</span>)}
+                  </div>
+                </div>
+              )}
+              {r.suggestions?.length > 0 && (
+                <div className="mb-4">
+                  <div className="label mb-2">💡 Suggestions</div>
+                  <ul style={{ paddingLeft: 18, display: 'flex', flexDirection: 'column', gap: 6 }}>
+                    {r.suggestions.map((s, i) => <li key={i} className="text-sm" style={{ color: 'var(--muted)', lineHeight: 1.6 }}>{s}</li>)}
+                  </ul>
+                </div>
+              )}
+              {r.experience?.length > 0 && (
+                <div className="mb-4">
+                  <div className="label mb-2">💼 Experience</div>
+                  {r.experience.map((ex, i) => (
+                    <div key={i} style={{ borderLeft: '3px solid var(--primary)', paddingLeft: 12, marginBottom: 10 }}>
+                      <div style={{ fontWeight: 600 }}>{ex.title} at {ex.company}</div>
+                      {ex.duration && <div className="text-xs text-muted">{ex.duration}</div>}
+                    </div>
+                  ))}
+                </div>
+              )}
+              {r.education?.length > 0 && (
+                <div>
+                  <div className="label mb-2">🎓 Education</div>
+                  {r.education.map((ed, i) => (
+                    <div key={i} style={{ borderLeft: '3px solid var(--info)', paddingLeft: 12, marginBottom: 10 }}>
+                      <div style={{ fontWeight: 600 }}>{ed.degree}</div>
+                      <div className="text-sm text-muted">{ed.institution} {ed.year && `· ${ed.year}`}</div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── Jobs ──────────────────────────────────────────────────────────────────────
+function JobsPage() {
+  const { user } = useAuth();
+  const [jobs, setJobs] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState('');
+  const [tab, setTab] = useState('all');
+  const [applyModal, setApplyModal] = useState(null);
+  const [resumes, setResumes] = useState([]);
+  const [applying, setApplying] = useState(false);
+  const [myApps, setMyApps] = useState([]);
+
+  const load = useCallback(async () => {
+    setLoading(true);
+    try {
+      const [j, apps, r] = await Promise.all([
+        apiReq('/jobs/'),
+        apiReq('/applications/'),
+        apiReq('/resumes/'),
+      ]);
+      setJobs(j);
+      setMyApps(apps);
+      setResumes(r);
+    } catch (e) { showToast(e.message, 'error'); }
+    finally { setLoading(false); }
+  }, []);
+
+  useEffect(() => { load(); }, [load]);
+
+  const filtered = useMemo(() => {
+    let list = jobs;
+    if (tab === 'applied') list = jobs.filter(j => myApps.find(a => a.job_id === j.id));
+    if (search) list = list.filter(j => `${j.title} ${j.company} ${j.location}`.toLowerCase().includes(search.toLowerCase()));
+    return list;
+  }, [jobs, myApps, tab, search]);
+
+  const apply = async (jobId, resumeId, coverLetter) => {
+    setApplying(true);
+    try {
+      await apiReq(`/jobs/${jobId}/apply/`, { method: 'POST', body: { resume_id: resumeId, cover_letter: coverLetter } });
+      showToast('Application submitted! ✅', 'success');
+      setApplyModal(null);
+      load();
+    } catch (e) { showToast(e.message, 'error'); }
+    finally { setApplying(false); }
+  };
+
+  const isApplied = (jobId) => myApps.some(a => a.job_id === jobId);
+
+  return (
+    <div className="page">
+      <div className="page-title">💼 Jobs & Opportunities</div>
+      <div className="page-sub">Browse jobs and apply with your resume. Track applications in the "Applied" tab.</div>
+
+      <div className="flex items-center gap-3 mb-4" style={{ flexWrap: 'wrap' }}>
+        <input value={search} onChange={e => setSearch(e.target.value)} placeholder="🔍  Search jobs, companies, locations…" style={{ maxWidth: 360 }} />
+        <div className="tabs" style={{ margin: 0, borderBottom: 'none', gap: 4 }}>
+          <button className={`tab${tab === 'all' ? ' active' : ''}`} onClick={() => setTab('all')}>All ({jobs.length})</button>
+          <button className={`tab${tab === 'applied' ? ' active' : ''}`} onClick={() => setTab('applied')}>Applied ({myApps.length})</button>
+        </div>
+      </div>
+
+      {loading ? (
+        <div style={{ textAlign: 'center', padding: 60 }}><span className="spinner" style={{ width: 36, height: 36 }} /></div>
+      ) : filtered.length === 0 ? (
+        <div className="empty"><div className="empty-icon">🔍</div><h3>No jobs found</h3><div>Try a different search term.</div></div>
+      ) : (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+          {filtered.map(j => (
+            <JobCard key={j.id} job={j} applied={isApplied(j.id)}
+              appStatus={myApps.find(a => a.job_id === j.id)?.status}
+              onApply={() => setApplyModal(j)} />
+          ))}
+        </div>
+      )}
+
+      {applyModal && (
+        <ApplyModal job={applyModal} resumes={resumes} loading={applying}
+          onClose={() => setApplyModal(null)} onSubmit={apply} />
+      )}
+    </div>
+  );
+}
+
+function JobCard({ job: j, applied, appStatus, onApply }) {
+  const [expanded, setExpanded] = useState(false);
+  const statusBadge = { pending: 'badge-warning', reviewing: 'badge-primary', shortlisted: 'badge-success', rejected: 'badge-danger', offered: 'badge-success' };
+
+  return (
+    <div className="card">
+      <div className="flex items-center justify-between" style={{ flexWrap: 'wrap', gap: 12 }}>
+        <div>
+          <div className="flex items-center gap-2">
+            <span style={{ fontWeight: 700, fontSize: 17 }}>{j.title}</span>
+            <span className="badge badge-muted">{j.employment_type}</span>
+            {applied && <span className={`badge ${statusBadge[appStatus] || 'badge-primary'}`}>{appStatus || 'Applied'}</span>}
+          </div>
+          <div className="text-sm text-muted mt-1">🏢 {j.company} &nbsp;·&nbsp; 📍 {j.location || 'Remote'}</div>
+        </div>
+        <div className="flex gap-2">
+          <button className="btn btn-ghost btn-sm" onClick={() => setExpanded(o => !o)}>{expanded ? '▲' : '▼ Details'}</button>
+          {!applied && <button className="btn btn-primary btn-sm" onClick={onApply}>Apply now →</button>}
+        </div>
+      </div>
+
+      {expanded && (
+        <div style={{ marginTop: 16 }}>
+          {j.description && <div className="text-sm" style={{ lineHeight: 1.7, color: 'var(--muted)', marginBottom: 12 }}>{j.description}</div>}
+          {j.requirements?.length > 0 && (
+            <div>
+              <div className="label mb-2">Required skills</div>
+              <div className="flex" style={{ flexWrap: 'wrap', gap: 6 }}>
+                {j.requirements.map(r => <span key={r} className="tag tag-skill">{r}</span>)}
+              </div>
+            </div>
+          )}
+          <div className="text-xs text-muted mt-3">Posted {new Date(j.created_at).toLocaleDateString()} by {j.posted_by}</div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function ApplyModal({ job, resumes, loading, onClose, onSubmit }) {
+  const [resumeId, setResumeId] = useState(resumes[0]?.id || '');
+  const [cover, setCover] = useState('');
+
+  return (
+    <div className="modal-overlay" onClick={e => e.target === e.currentTarget && onClose()}>
+      <div className="modal">
+        <div className="modal-title">Apply for {job.title}</div>
+        <div className="text-sm text-muted mb-4">at {job.company} · {job.location}</div>
+        <div className="form-group">
+          <label className="label">Select resume</label>
+          <select value={resumeId} onChange={e => setResumeId(e.target.value)}>
+            <option value="">— No resume —</option>
+            {resumes.map(r => <option key={r.id} value={r.id}>{r.file_name} {r.ats_score != null ? `(ATS: ${r.ats_score})` : ''}</option>)}
+          </select>
+        </div>
+        <div className="form-group">
+          <label className="label">Cover letter (optional)</label>
+          <textarea value={cover} onChange={e => setCover(e.target.value)} placeholder="Why are you a great fit for this role?" rows={4} />
+        </div>
+        <div className="flex gap-3">
+          <button className="btn btn-primary flex-1" disabled={loading} onClick={() => onSubmit(job.id, resumeId, cover)}>
+            {loading ? <><span className="spinner" /> Submitting…</> : 'Submit application'}
+          </button>
+          <button className="btn btn-secondary" onClick={onClose}>Cancel</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── AI Chat ───────────────────────────────────────────────────────────────────
+function ChatPage() {
+  const [messages, setMessages] = useState([]);
+  const [input, setInput] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [initing, setIniting] = useState(true);
+  const bottomRef = useRef();
+
+  useEffect(() => {
+    apiReq('/ai/chat/').then(msgs => setMessages(msgs)).catch(() => {}).finally(() => setIniting(false));
+  }, []);
+
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages]);
+
+  const send = async () => {
+    const msg = input.trim();
+    if (!msg || loading) return;
+    setInput('');
+    const userMsg = { role: 'user', content: msg, created_at: new Date().toISOString() };
+    setMessages(m => [...m, userMsg]);
+    setLoading(true);
+    try {
+      const { reply } = await apiReq('/ai/chat/', { method: 'POST', body: { message: msg } });
+      setMessages(m => [...m, { role: 'assistant', content: reply, created_at: new Date().toISOString() }]);
+    } catch (e) {
+      showToast(e.message, 'error');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const clearChat = async () => {
+    if (!confirm('Clear chat history?')) return;
+    await apiReq('/ai/chat/', { method: 'DELETE' }).catch(() => {});
+    setMessages([]);
+  };
+
+  const starters = ['What roles match a React + Node.js background?', 'Write me a cold email to a recruiter at Google', 'How do I negotiate my first salary offer?', 'What should I put in my GitHub profile?'];
+
+  return (
+    <div className="page-md">
+      <div className="section-head">
+        <div>
+          <div className="page-title">🤖 AI Career Assistant</div>
+          <div className="page-sub">Get personalized career guidance, cover letters, and advice.</div>
+        </div>
+        <button className="btn btn-ghost btn-sm" onClick={clearChat}>🗑 Clear</button>
+      </div>
+
+      <div className="card chat-container">
+        <div className="chat-messages">
+          {initing && <div style={{ textAlign: 'center', padding: 40 }}><span className="spinner" style={{ width: 28, height: 28 }} /></div>}
+          {!initing && messages.length === 0 && (
+            <div style={{ padding: 20 }}>
+              <div style={{ textAlign: 'center', marginBottom: 24, color: 'var(--muted)' }}>
+                <div style={{ fontSize: 40, marginBottom: 8 }}>🤖</div>
+                <div style={{ fontWeight: 600, color: 'var(--text)' }}>PlaceIQ AI Career Assistant</div>
+                <div className="text-sm mt-1">Ask me anything about your career, resume, or job search.</div>
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+                {starters.map(s => (
+                  <button key={s} className="btn btn-secondary text-sm" style={{ textAlign: 'left', padding: '10px 14px', height: 'auto', whiteSpace: 'normal' }}
+                    onClick={() => setInput(s)}>{s}</button>
+                ))}
+              </div>
+            </div>
+          )}
+          {messages.map((m, i) => (
+            <div key={i} className={`chat-msg ${m.role}`}>
+              {m.role === 'assistant'
+                ? <div className="md-content" dangerouslySetInnerHTML={{ __html: marked.parse(m.content) }} />
+                : m.content}
+            </div>
+          ))}
+          {loading && <div className="chat-msg assistant" style={{ display: 'flex', gap: 4, alignItems: 'center' }}>
+            <span className="spinner" style={{ width: 14, height: 14 }} /> Thinking…
+          </div>}
+          <div ref={bottomRef} />
+        </div>
+        <div className="chat-input-row">
+          <input value={input} onChange={e => setInput(e.target.value)}
+            onKeyDown={e => e.key === 'Enter' && !e.shiftKey && send()}
+            placeholder="Ask about your career, resume, interview prep…" />
+          <button className="btn btn-primary" onClick={send} disabled={!input.trim() || loading}>Send →</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── Roadmap ───────────────────────────────────────────────────────────────────
+function RoadmapPage() {
+  const [form, setForm] = useState({ target_role: '', experience_level: 'beginner', current_skills: '' });
+  const [loading, setLoading] = useState(false);
+  const [roadmap, setRoadmap] = useState(null);
+
+  const generate = async () => {
+    if (!form.target_role.trim()) { showToast('Enter a target role', 'error'); return; }
+    setLoading(true);
+    try {
+      const data = await apiReq('/ai/roadmap/', {
+        method: 'POST',
+        body: {
+          target_role: form.target_role,
+          experience_level: form.experience_level,
+          current_skills: form.current_skills.split(',').map(s => s.trim()).filter(Boolean),
+        },
+      });
+      setRoadmap(data);
+    } catch (e) { showToast(e.message, 'error'); }
+    finally { setLoading(false); }
+  };
+
+  return (
+    <div className="page-md">
+      <div className="page-title">🗺️ Career Roadmap Generator</div>
+      <div className="page-sub">Get a step-by-step AI-generated learning roadmap for your target role.</div>
+
+      <div className="card mb-6">
+        <div className="grid-2" style={{ marginBottom: 16 }}>
+          <div className="form-group" style={{ margin: 0 }}>
+            <label className="label">Target role</label>
+            <input value={form.target_role} onChange={e => setForm(f => ({ ...f, target_role: e.target.value }))} placeholder="e.g. Frontend Developer, Data Scientist" />
+          </div>
+          <div className="form-group" style={{ margin: 0 }}>
+            <label className="label">Experience level</label>
+            <select value={form.experience_level} onChange={e => setForm(f => ({ ...f, experience_level: e.target.value }))}>
+              <option value="beginner">Beginner (0–1 year)</option>
+              <option value="intermediate">Intermediate (1–3 years)</option>
+              <option value="senior">Senior (3+ years)</option>
+            </select>
+          </div>
+        </div>
+        <div className="form-group">
+          <label className="label">Current skills (comma-separated)</label>
+          <input value={form.current_skills} onChange={e => setForm(f => ({ ...f, current_skills: e.target.value }))} placeholder="e.g. HTML, CSS, JavaScript" />
+        </div>
+        <button className="btn btn-primary" onClick={generate} disabled={loading}>
+          {loading ? <><span className="spinner" /> Generating…</> : '🗺️ Generate roadmap'}
+        </button>
+      </div>
+
+      {roadmap && (
+        <div>
+          <div className="card mb-4">
+            <div style={{ fontSize: 20, fontWeight: 800, marginBottom: 4 }}>{roadmap.title}</div>
+            <div className="text-sm text-muted">📅 Estimated timeline: {roadmap.timeline}</div>
+            {roadmap.key_skills?.length > 0 && (
+              <div className="mt-3">
+                <div className="label mb-2">Key skills to acquire</div>
+                <div className="flex" style={{ flexWrap: 'wrap', gap: 6 }}>
+                  {roadmap.key_skills.map(s => <span key={s} className="tag tag-skill">{s}</span>)}
+                </div>
+              </div>
+            )}
+          </div>
+          {roadmap.phases?.map((phase, i) => (
+            <div key={i} className="card mb-4">
+              <div className="flex items-center gap-3 mb-3">
+                <div style={{ width: 32, height: 32, background: 'var(--primary)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, flexShrink: 0 }}>{i + 1}</div>
+                <div>
+                  <div style={{ fontWeight: 700 }}>{phase.phase}</div>
+                  <div className="text-sm text-muted">⏱ {phase.duration}</div>
+                </div>
+              </div>
+              {phase.topics?.length > 0 && (
+                <div className="mb-3">
+                  <div className="label mb-2">Topics</div>
+                  <ul style={{ paddingLeft: 18, display: 'flex', flexDirection: 'column', gap: 4 }}>
+                    {phase.topics.map(t => <li key={t} className="text-sm" style={{ color: 'var(--muted)' }}>{t}</li>)}
+                  </ul>
+                </div>
+              )}
+              {phase.resources?.length > 0 && (
+                <div>
+                  <div className="label mb-2">Resources</div>
+                  <div className="flex" style={{ flexWrap: 'wrap', gap: 6 }}>
+                    {phase.resources.map(r => <span key={r} className="tag">{r}</span>)}
+                  </div>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── Skill Gap ─────────────────────────────────────────────────────────────────
+function SkillGapPage() {
+  const [form, setForm] = useState({ target_role: '', resume_id: '' });
+  const [loading, setLoading] = useState(false);
+  const [result, setResult] = useState(null);
+  const [resumes, setResumes] = useState([]);
+
+  useEffect(() => {
+    apiReq('/resumes/').then(r => setResumes(r.filter(x => x.status === 'analyzed'))).catch(() => {});
+  }, []);
+
+  const analyze = async () => {
+    if (!form.target_role.trim()) { showToast('Enter a target role', 'error'); return; }
+    setLoading(true);
+    try {
+      const data = await apiReq('/ai/skill-gap/', { method: 'POST', body: { target_role: form.target_role, resume_id: form.resume_id || undefined } });
+      setResult(data);
+    } catch (e) { showToast(e.message, 'error'); }
+    finally { setLoading(false); }
+  };
+
+  const prioColor = { high: 'var(--danger)', medium: 'var(--warning)', low: 'var(--success)' };
+
+  return (
+    <div className="page-md">
+      <div className="page-title">⚡ Skill Gap Analyzer</div>
+      <div className="page-sub">See exactly which skills you need to acquire for your target role.</div>
+
+      <div className="card mb-6">
+        <div className="grid-2" style={{ marginBottom: 16 }}>
+          <div>
+            <label className="label">Target role</label>
+            <input value={form.target_role} onChange={e => setForm(f => ({ ...f, target_role: e.target.value }))} placeholder="e.g. Machine Learning Engineer" />
+          </div>
+          <div>
+            <label className="label">Compare with resume (optional)</label>
+            <select value={form.resume_id} onChange={e => setForm(f => ({ ...f, resume_id: e.target.value }))}>
+              <option value="">— Generic analysis —</option>
+              {resumes.map(r => <option key={r.id} value={r.id}>{r.file_name}</option>)}
+            </select>
+          </div>
+        </div>
+        <button className="btn btn-primary" onClick={analyze} disabled={loading}>
+          {loading ? <><span className="spinner" /> Analyzing…</> : '⚡ Analyze skill gap'}
+        </button>
+      </div>
+
+      {result && (
+        <div>
+          <div className="grid-2 mb-4">
+            <div className="card" style={{ textAlign: 'center' }}>
+              <div style={{ fontSize: 48, fontWeight: 900, color: result.match_score >= 70 ? 'var(--success)' : result.match_score >= 40 ? 'var(--warning)' : 'var(--danger)' }}>
+                {result.match_score}%
+              </div>
+              <div className="text-muted text-sm">Match score</div>
+            </div>
+            <div className="card">
+              <div className="label mb-2">Recommendation</div>
+              <div className="text-sm" style={{ lineHeight: 1.7, color: 'var(--muted)' }}>{result.recommendation}</div>
+            </div>
+          </div>
+
+          {result.matched_skills?.length > 0 && (
+            <div className="card mb-4">
+              <div className="label mb-3">✅ Skills you already have</div>
+              <div className="flex" style={{ flexWrap: 'wrap', gap: 6 }}>
+                {result.matched_skills.map(s => <span key={s} className="tag tag-skill">{s}</span>)}
+              </div>
+            </div>
+          )}
+
+          {result.missing_skills?.length > 0 && (
+            <div className="card">
+              <div className="label mb-3">🎯 Skills to acquire</div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                {result.missing_skills.map((sk, i) => (
+                  <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
+                    <span style={{ fontSize: 11, fontWeight: 700, padding: '3px 8px', borderRadius: 20, background: `${prioColor[sk.priority]}22`, color: prioColor[sk.priority], flexShrink: 0, marginTop: 2 }}>
+                      {(sk.priority || 'medium').toUpperCase()}
+                    </span>
+                    <div>
+                      <div style={{ fontWeight: 600 }}>{sk.skill}</div>
+                      {sk.why && <div className="text-sm text-muted">{sk.why}</div>}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── Interview ─────────────────────────────────────────────────────────────────
+function InterviewPage() {
+  const [tab, setTab] = useState('new');
+  const [interviews, setInterviews] = useState([]);
+  const [active, setActive] = useState(null);
+  const [answers, setAnswers] = useState({});
+  const [feedback, setFeedback] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [form, setForm] = useState({ role: '', num_questions: 5 });
+
+  useEffect(() => {
+    apiReq('/interviews/').then(setInterviews).catch(() => {});
+  }, [tab]);
+
+  const startInterview = async () => {
+    if (!form.role.trim()) { showToast('Enter a role', 'error'); return; }
+    setLoading(true);
+    try {
+      const data = await apiReq('/interviews/', { method: 'POST', body: { role: form.role, num_questions: form.num_questions } });
+      setActive(data);
+      setAnswers({});
+      setFeedback(null);
+      setTab('active');
+    } catch (e) { showToast(e.message, 'error'); }
+    finally { setLoading(false); }
+  };
+
+  const submit = async () => {
+    if (!active) return;
+    const filled = active.questions.filter((_, i) => answers[i]?.trim());
+    if (filled.length === 0) { showToast('Please answer at least one question', 'error'); return; }
+    setSubmitting(true);
+    try {
+      const ans = active.questions.map((q, i) => ({ question: q, answer: answers[i] || '' }));
+      const fb = await apiReq(`/interviews/${active.id}/feedback/`, { method: 'POST', body: { answers: ans } });
+      setFeedback(fb);
+      apiReq('/interviews/').then(setInterviews).catch(() => {});
+    } catch (e) { showToast(e.message, 'error'); }
+    finally { setSubmitting(false); }
+  };
+
+  return (
+    <div className="page-md">
+      <div className="page-title">🎤 Mock Interview</div>
+      <div className="page-sub">Practice role-specific interview questions and get instant AI feedback.</div>
+
+      <div className="tabs">
+        <button className={`tab${tab === 'new' ? ' active' : ''}`} onClick={() => { setTab('new'); setActive(null); setFeedback(null); }}>New interview</button>
+        <button className={`tab${tab === 'active' ? ' active' : ''}`} onClick={() => setTab('active')} disabled={!active}>In progress</button>
+        <button className={`tab${tab === 'history' ? ' active' : ''}`} onClick={() => setTab('history')}>History ({interviews.length})</button>
+      </div>
+
+      {tab === 'new' && (
+        <div className="card">
+          <div className="form-group">
+            <label className="label">Target role</label>
+            <input value={form.role} onChange={e => setForm(f => ({ ...f, role: e.target.value }))} placeholder="e.g. Software Engineer, Product Manager, Data Analyst" />
+          </div>
+          <div className="form-group">
+            <label className="label">Number of questions</label>
+            <select value={form.num_questions} onChange={e => setForm(f => ({ ...f, num_questions: +e.target.value }))}>
+              {[3, 5, 7, 10].map(n => <option key={n} value={n}>{n} questions</option>)}
+            </select>
+          </div>
+          <button className="btn btn-primary" onClick={startInterview} disabled={loading}>
+            {loading ? <><span className="spinner" /> Generating questions…</> : '🎤 Start interview'}
+          </button>
+        </div>
+      )}
+
+      {tab === 'active' && active && !feedback && (
+        <div>
+          <div style={{ marginBottom: 20, padding: '12px 16px', background: 'var(--primary-dim)', borderRadius: 10, color: 'var(--primary)', fontWeight: 600 }}>
+            🎤 {active.role} interview — {active.questions.length} questions
+          </div>
+          {active.questions.map((q, i) => (
+            <div key={i} className="question-card">
+              <div className="question-num">Question {i + 1} of {active.questions.length}</div>
+              <div style={{ fontWeight: 600, marginBottom: 12, fontSize: 16, lineHeight: 1.5 }}>{q}</div>
+              <textarea
+                value={answers[i] || ''}
+                onChange={e => setAnswers(a => ({ ...a, [i]: e.target.value }))}
+                placeholder="Type your answer here…"
+                rows={4}
+              />
+            </div>
+          ))}
+          <button className="btn btn-primary" onClick={submit} disabled={submitting}>
+            {submitting ? <><span className="spinner" /> Getting feedback…</> : '📤 Submit for AI feedback'}
+          </button>
+        </div>
+      )}
+
+      {tab === 'active' && feedback && (
+        <div>
+          <div className="card mb-6" style={{ textAlign: 'center' }}>
+            <div style={{ fontSize: 56, fontWeight: 900, color: feedback.overall_score >= 70 ? 'var(--success)' : feedback.overall_score >= 50 ? 'var(--warning)' : 'var(--danger)' }}>
+              {feedback.overall_score}/100
+            </div>
+            <div className="text-muted text-sm mb-3">Overall interview score</div>
+            <div className="text-sm" style={{ lineHeight: 1.7, color: 'var(--muted)' }}>{feedback.overall_feedback}</div>
+          </div>
+          {feedback.per_question?.map((fb, i) => (
+            <div key={i} className="card mb-3">
+              <div className="flex items-center justify-between mb-2">
+                <div className="question-num">Q{i + 1}</div>
+                <div style={{ fontWeight: 700, color: fb.score >= 7 ? 'var(--success)' : fb.score >= 5 ? 'var(--warning)' : 'var(--danger)' }}>{fb.score}/10</div>
+              </div>
+              <div style={{ fontWeight: 600, marginBottom: 8, fontSize: 14 }}>{active.questions[i]}</div>
+              {answers[i] && <div className="text-sm text-muted" style={{ background: 'var(--bg)', padding: '8px 12px', borderRadius: 8, marginBottom: 8 }}>{answers[i]}</div>}
+              <div className="text-sm" style={{ color: 'var(--info)', lineHeight: 1.6 }}>💬 {fb.feedback}</div>
+            </div>
+          ))}
+          <button className="btn btn-secondary" onClick={() => { setTab('new'); setActive(null); setFeedback(null); }}>Start new interview</button>
+        </div>
+      )}
+
+      {tab === 'history' && (
+        <div>
+          {interviews.length === 0 ? (
+            <div className="empty"><div className="empty-icon">🎤</div><h3>No interviews yet</h3><div>Start a mock interview to see your history here.</div></div>
+          ) : interviews.map(iv => (
+            <div key={iv.id} className="card mb-3">
+              <div className="flex items-center justify-between">
+                <div>
+                  <div style={{ fontWeight: 600 }}>{iv.role}</div>
+                  <div className="text-xs text-muted mt-1">{new Date(iv.created_at).toLocaleString()}</div>
+                </div>
+                <div>
+                  {iv.score != null && (
+                    <div style={{ fontWeight: 800, fontSize: 20, color: iv.score >= 70 ? 'var(--success)' : iv.score >= 50 ? 'var(--warning)' : 'var(--danger)' }}>
+                      {iv.score}/100
+                    </div>
+                  )}
+                  <span className={`badge ${iv.completed ? 'badge-success' : 'badge-muted'}`}>{iv.completed ? 'Completed' : 'Draft'}</span>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── Learn ─────────────────────────────────────────────────────────────────────
+function LearnPage() {
+  const [tab, setTab] = useState('mcq');
+  const [topic, setTopic] = useState('');
+  const [count, setCount] = useState(5);
+  const [loading, setLoading] = useState(false);
+  const [quiz, setQuiz] = useState(null);
+  const [answers, setAnswers] = useState({});
+  const [submitted, setSubmitted] = useState(false);
+  const [history, setHistory] = useState([]);
+
+  useEffect(() => {
+    apiReq('/learn/history/').then(setHistory).catch(() => {});
+  }, [submitted]);
+
+  const generateQuiz = async () => {
+    if (!topic.trim()) { showToast('Enter a topic', 'error'); return; }
+    setLoading(true);
+    try {
+      const data = await apiReq('/learn/mcq/', { method: 'POST', body: { topic, count } });
+      setQuiz(data);
+      setAnswers({});
+      setSubmitted(false);
+    } catch (e) { showToast(e.message, 'error'); }
+    finally { setLoading(false); }
+  };
+
+  const submitQuiz = async () => {
+    const score = quiz.questions.filter((q, i) => answers[i] === q.answer).length;
+    await apiReq('/learn/mcq/', { method: 'PATCH', body: { topic, score, total: quiz.questions.length } }).catch(() => {});
+    setSubmitted(true);
+    showToast(`Score: ${score}/${quiz.questions.length}`, score >= quiz.questions.length * 0.6 ? 'success' : 'info');
+  };
+
+  return (
+    <div className="page-md">
+      <div className="page-title">📚 Learning Hub</div>
+      <div className="page-sub">Practice with AI-generated MCQs on any topic.</div>
+
+      <div className="tabs">
+        <button className={`tab${tab === 'mcq' ? ' active' : ''}`} onClick={() => setTab('mcq')}>MCQ Quiz</button>
+        <button className={`tab${tab === 'history' ? ' active' : ''}`} onClick={() => setTab('history')}>History</button>
+      </div>
+
+      {tab === 'mcq' && (
+        <div>
+          <div className="card mb-6">
+            <div className="grid-2" style={{ marginBottom: 16 }}>
+              <div>
+                <label className="label">Topic</label>
+                <input value={topic} onChange={e => setTopic(e.target.value)} placeholder="e.g. JavaScript closures, Data structures, SQL" />
+              </div>
+              <div>
+                <label className="label">Number of questions</label>
+                <select value={count} onChange={e => setCount(+e.target.value)}>
+                  {[3, 5, 7, 10].map(n => <option key={n} value={n}>{n} questions</option>)}
+                </select>
+              </div>
+            </div>
+            <button className="btn btn-primary" onClick={generateQuiz} disabled={loading}>
+              {loading ? <><span className="spinner" /> Generating…</> : '📝 Generate quiz'}
+            </button>
+          </div>
+
+          {quiz && (
+            <div>
+              {quiz.questions.map((q, i) => (
+                <div key={i} className="card mb-4">
+                  <div className="question-num">Q{i + 1}</div>
+                  <div style={{ fontWeight: 600, marginBottom: 14, fontSize: 15, lineHeight: 1.5 }}>{q.question}</div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                    {q.options.map((opt, oi) => {
+                      let bg = 'var(--bg3)', color = 'var(--text)', border = 'var(--border)';
+                      if (submitted) {
+                        if (oi === q.answer) { bg = 'rgba(34,197,94,.12)'; color = 'var(--success)'; border = 'var(--success)'; }
+                        else if (answers[i] === oi && oi !== q.answer) { bg = 'rgba(239,68,68,.12)'; color = 'var(--danger)'; border = 'var(--danger)'; }
+                      } else if (answers[i] === oi) { bg = 'var(--primary-dim)'; color = 'var(--primary)'; border = 'var(--primary)'; }
+                      return (
+                        <div key={oi} onClick={() => !submitted && setAnswers(a => ({ ...a, [i]: oi }))}
+                          style={{ padding: '10px 14px', borderRadius: 8, background: bg, color, border: `1.5px solid ${border}`, cursor: submitted ? 'default' : 'pointer', transition: 'all .15s', fontSize: 14 }}>
+                          {String.fromCharCode(65 + oi)}. {opt}
+                        </div>
+                      );
+                    })}
+                  </div>
+                  {submitted && q.explanation && (
+                    <div className="mt-3 text-sm" style={{ color: 'var(--info)', background: 'rgba(56,189,248,.08)', padding: '10px 14px', borderRadius: 8, lineHeight: 1.6 }}>
+                      💡 {q.explanation}
+                    </div>
+                  )}
+                </div>
+              ))}
+              {!submitted && (
+                <button className="btn btn-primary" onClick={submitQuiz} disabled={Object.keys(answers).length < quiz.questions.length}>
+                  Submit quiz →
+                </button>
+              )}
+              {submitted && (
+                <button className="btn btn-secondary" onClick={() => { setQuiz(null); setSubmitted(false); }}>
+                  Try another topic
+                </button>
+              )}
+            </div>
+          )}
+        </div>
+      )}
+
+      {tab === 'history' && (
+        <div>
+          {history.length === 0 ? (
+            <div className="empty"><div className="empty-icon">📊</div><h3>No quiz history</h3><div>Complete a quiz to see your results here.</div></div>
+          ) : history.map(h => (
+            <div key={h.id} className="card mb-3 flex items-center justify-between">
+              <div>
+                <div style={{ fontWeight: 600 }}>{h.topic}</div>
+                <div className="text-xs text-muted mt-1">{new Date(h.completed_at).toLocaleString()}</div>
+              </div>
+              <div>
+                <span style={{ fontWeight: 800, fontSize: 18, color: h.score / h.total >= .6 ? 'var(--success)' : 'var(--warning)' }}>{h.score}/{h.total}</span>
+                <div className="text-xs text-muted text-center">{Math.round(h.score / h.total * 100)}%</div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── Notifications ─────────────────────────────────────────────────────────────
+function NotificationsPage() {
+  const [notifs, setNotifs] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    apiReq('/notifications/').then(setNotifs).finally(() => setLoading(false));
+  }, []);
+
+  const markAllRead = async () => {
+    await apiReq('/notifications/1/read/', { method: 'PATCH' }).catch(() => {});
+    setNotifs(n => n.map(x => ({ ...x, is_read: true })));
+  };
+
+  const catIcon = { resume: '📄', job: '💼', interview: '🎤', system: '🔔' };
+
+  return (
+    <div className="page-md">
+      <div className="section-head">
+        <div className="page-title">🔔 Notifications</div>
+        <button className="btn btn-ghost btn-sm" onClick={markAllRead}>Mark all read</button>
+      </div>
+      {loading ? <div style={{ textAlign: 'center', padding: 40 }}><span className="spinner" style={{ width: 32, height: 32 }} /></div> :
+        notifs.length === 0 ? (
+          <div className="empty"><div className="empty-icon">🔔</div><h3>No notifications</h3><div>You're all caught up!</div></div>
+        ) : notifs.map(n => (
+          <div key={n.id} className="card mb-3" style={{ borderColor: n.is_read ? 'var(--border)' : 'var(--primary)', opacity: n.is_read ? .7 : 1 }}>
+            <div className="flex items-center gap-3">
+              <span style={{ fontSize: 24 }}>{catIcon[n.category] || '🔔'}</span>
+              <div style={{ flex: 1 }}>
+                <div className="flex items-center gap-2">
+                  <span style={{ fontWeight: 600 }}>{n.title}</span>
+                  {!n.is_read && <span className="badge badge-primary" style={{ fontSize: 10 }}>NEW</span>}
+                </div>
+                <div className="text-sm text-muted mt-1">{n.message}</div>
+                <div className="text-xs text-muted mt-1">{new Date(n.created_at).toLocaleString()}</div>
+              </div>
+            </div>
+          </div>
+        ))
+      }
+    </div>
+  );
+}
+
+// ── Profile ───────────────────────────────────────────────────────────────────
+function ProfilePage() {
+  const { user, signOut } = useAuth();
+  const [profile, setProfile] = useState(null);
+
+  useEffect(() => {
+    apiReq('/profile/').then(setProfile).catch(() => {});
+  }, []);
+
+  const p = profile || user;
+
+  return (
+    <div className="page-sm">
+      <div className="page-title">👤 Profile</div>
+
+      <div className="card mb-4" style={{ textAlign: 'center' }}>
+        <div style={{ width: 72, height: 72, background: 'linear-gradient(135deg,var(--primary),#a78bfa)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 28, fontWeight: 800, margin: '0 auto 12px' }}>
+          {(p?.first_name || p?.username || '?')[0].toUpperCase()}
+        </div>
+        <div style={{ fontWeight: 800, fontSize: 20 }}>{p?.first_name} {p?.last_name}</div>
+        <div className="text-muted text-sm">{p?.email}</div>
+        <div className="mt-2"><span className="badge badge-primary">{p?.role}</span></div>
+      </div>
+
+      {profile && (
+        <div className="grid-2 mb-4">
+          {[
+            { label: 'Resumes', value: profile.resume_count },
+            { label: 'Best ATS score', value: profile.best_ats_score ?? '—' },
+            { label: 'Applications', value: profile.applications_count },
+            { label: 'Interviews', value: profile.interviews_count },
+          ].map(s => (
+            <div key={s.label} className="stat-card" style={{ textAlign: 'center' }}>
+              <div className="stat-value">{s.value}</div>
+              <div className="stat-label">{s.label}</div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      <div className="card">
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+          <button className="btn btn-ghost" onClick={() => navigate('/resumes')}>📄 My Resumes →</button>
+          <button className="btn btn-ghost" onClick={() => navigate('/jobs')}>💼 My Applications →</button>
+          <button className="btn btn-ghost" onClick={() => navigate('/interview')}>🎤 Interview History →</button>
+          <hr className="divider" />
+          <button className="btn btn-danger" onClick={async () => { await signOut(); navigate('/'); }}>Sign out</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── Admin ─────────────────────────────────────────────────────────────────────
+function AdminPage() {
+  const [tab, setTab] = useState('users');
+  const [users, setUsers] = useState([]);
+  const [stats, setStats] = useState(null);
+  const [jobs, setJobs] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [showJobForm, setShowJobForm] = useState(false);
+
+  useEffect(() => {
+    Promise.all([
+      apiReq('/admin/users/'),
+      apiReq('/admin/stats/'),
+      apiReq('/jobs/'),
+    ]).then(([u, s, j]) => { setUsers(u); setStats(s); setJobs(j); }).catch(e => showToast(e.message, 'error')).finally(() => setLoading(false));
+  }, []);
+
+  const changeRole = async (userId, role) => {
+    try {
+      const updated = await apiReq(`/admin/users/${userId}/`, { method: 'PATCH', body: { role } });
+      setUsers(u => u.map(x => x.id === userId ? updated : x));
+      showToast('Role updated', 'success');
+    } catch (e) { showToast(e.message, 'error'); }
+  };
+
+  const createJob = async (data) => {
+    try {
+      const job = await apiReq('/jobs/', { method: 'POST', body: data });
+      setJobs(j => [job, ...j]);
+      showToast('Job created', 'success');
+      setShowJobForm(false);
+    } catch (e) { showToast(e.message, 'error'); }
+  };
+
+  const deleteJob = async (id) => {
+    if (!confirm('Delete this job?')) return;
+    try {
+      await apiReq(`/jobs/${id}/`, { method: 'DELETE' });
+      setJobs(j => j.filter(x => x.id !== id));
+      showToast('Deleted', 'success');
+    } catch (e) { showToast(e.message, 'error'); }
+  };
+
+  return (
+    <div className="page">
+      <div className="page-title">🛡️ Admin Panel</div>
+
+      {stats && (
+        <div className="grid-4 mb-6">
+          {[
+            { label: 'Users', value: stats.total_users },
+            { label: 'Resumes', value: stats.total_resumes },
+            { label: 'Jobs', value: stats.total_jobs },
+            { label: 'Avg ATS', value: stats.avg_ats_score },
+          ].map(s => <div key={s.label} className="stat-card"><div className="stat-value">{s.value}</div><div className="stat-label">{s.label}</div></div>)}
+        </div>
+      )}
+
+      <div className="tabs">
+        <button className={`tab${tab === 'users' ? ' active' : ''}`} onClick={() => setTab('users')}>Users ({users.length})</button>
+        <button className={`tab${tab === 'jobs' ? ' active' : ''}`} onClick={() => setTab('jobs')}>Jobs ({jobs.length})</button>
+      </div>
+
+      {loading && <div style={{ textAlign: 'center', padding: 40 }}><span className="spinner" style={{ width: 32, height: 32 }} /></div>}
+
+      {!loading && tab === 'users' && (
+        <div style={{ overflowX: 'auto' }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 14 }}>
+            <thead>
+              <tr style={{ borderBottom: '1.5px solid var(--border)', color: 'var(--muted)', textAlign: 'left' }}>
+                {['Name', 'Email', 'Role', 'Joined', 'Action'].map(h => <th key={h} style={{ padding: '10px 12px', fontWeight: 600 }}>{h}</th>)}
+              </tr>
+            </thead>
+            <tbody>
+              {users.map(u => (
+                <tr key={u.id} style={{ borderBottom: '1px solid var(--border)' }}>
+                  <td style={{ padding: '10px 12px', fontWeight: 600 }}>{u.first_name} {u.last_name}</td>
+                  <td style={{ padding: '10px 12px', color: 'var(--muted)' }}>{u.email}</td>
+                  <td style={{ padding: '10px 12px' }}><span className={`badge ${u.role === 'admin' ? 'badge-danger' : u.role === 'recruiter' ? 'badge-primary' : 'badge-muted'}`}>{u.role}</span></td>
+                  <td style={{ padding: '10px 12px', color: 'var(--muted)' }}>{u.username}</td>
+                  <td style={{ padding: '10px 12px' }}>
+                    <select value={u.role} onChange={e => changeRole(u.id, e.target.value)} style={{ width: 'auto', padding: '4px 8px' }}>
+                      <option value="student">student</option>
+                      <option value="recruiter">recruiter</option>
+                      <option value="admin">admin</option>
+                    </select>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      {!loading && tab === 'jobs' && (
+        <div>
+          <div style={{ marginBottom: 16 }}>
+            <button className="btn btn-primary" onClick={() => setShowJobForm(true)}>+ Post new job</button>
+          </div>
+          {jobs.map(j => (
+            <div key={j.id} className="card mb-3 flex items-center justify-between" style={{ flexWrap: 'wrap', gap: 12 }}>
+              <div>
+                <div style={{ fontWeight: 700 }}>{j.title}</div>
+                <div className="text-sm text-muted">{j.company} · {j.location} · {j.employment_type}</div>
+              </div>
+              <div className="flex gap-2">
+                <span className={`badge ${j.is_active ? 'badge-success' : 'badge-muted'}`}>{j.is_active ? 'Active' : 'Inactive'}</span>
+                <button className="btn btn-danger btn-sm" onClick={() => deleteJob(j.id)}>🗑 Delete</button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {showJobForm && <JobFormModal onClose={() => setShowJobForm(false)} onSubmit={createJob} />}
+    </div>
+  );
+}
+
+function JobFormModal({ onClose, onSubmit }) {
+  const [form, setForm] = useState({ title: '', company: '', location: '', description: '', employment_type: 'Full-time', requirements: '' });
+  const [loading, setLoading] = useState(false);
+
+  const submit = async () => {
+    if (!form.title || !form.company) { showToast('Title and company required', 'error'); return; }
+    setLoading(true);
+    await onSubmit({ ...form, requirements: form.requirements.split(',').map(s => s.trim()).filter(Boolean) });
+    setLoading(false);
+  };
+
+  return (
+    <div className="modal-overlay" onClick={e => e.target === e.currentTarget && onClose()}>
+      <div className="modal">
+        <div className="modal-title">Post new job</div>
+        {['title', 'company', 'location'].map(f => (
+          <div key={f} className="form-group">
+            <label className="label">{f}</label>
+            <input value={form[f]} onChange={e => setForm(p => ({ ...p, [f]: e.target.value }))} placeholder={f} />
+          </div>
+        ))}
+        <div className="form-group">
+          <label className="label">Employment type</label>
+          <select value={form.employment_type} onChange={e => setForm(p => ({ ...p, employment_type: e.target.value }))}>
+            {['Full-time', 'Part-time', 'Internship', 'Contract', 'Remote'].map(t => <option key={t} value={t}>{t}</option>)}
+          </select>
+        </div>
+        <div className="form-group">
+          <label className="label">Requirements (comma-separated)</label>
+          <input value={form.requirements} onChange={e => setForm(p => ({ ...p, requirements: e.target.value }))} placeholder="React, Node.js, SQL" />
+        </div>
+        <div className="form-group">
+          <label className="label">Description</label>
+          <textarea value={form.description} onChange={e => setForm(p => ({ ...p, description: e.target.value }))} rows={3} />
+        </div>
+        <div className="flex gap-3">
+          <button className="btn btn-primary flex-1" onClick={submit} disabled={loading}>
+            {loading ? <><span className="spinner" /> Posting…</> : 'Post job'}
+          </button>
+          <button className="btn btn-secondary" onClick={onClose}>Cancel</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── Root ───────────────────────────────────────────────────────────────────────
+const root = ReactDOM.createRoot(document.getElementById('root'));
+root.render(
+  <AuthProvider>
+    <App />
+  </AuthProvider>
+);
+</script>
+</body>
+</html>
